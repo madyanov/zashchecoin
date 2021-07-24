@@ -20,8 +20,8 @@ CLI parameters:
   -api-port int
     	HTTP API port (default 8080)
   -peers string
-    	Path to peers file (default "peers.txt")
-  -srv-port int
+    	Path to the peers file (default "peers.txt")
+  -p2p-port int
     	P2P server port (default 8081)
 ```
 

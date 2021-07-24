@@ -15,8 +15,8 @@ import (
 
 func main() {
 	apiPort := flag.Int("api-port", 8080, "HTTP API port")
-	srvPort := flag.Int("srv-port", 8081, "P2P server port")
-	peersPath := flag.String("peers", "peers.txt", "Path to peers file")
+	p2pPort := flag.Int("p2p-port", 8081, "P2P server port")
+	peersPath := flag.String("peers", "peers.txt", "Path to the peers file")
 	flag.Parse()
 
 	bc := blockchain.NewBlockchain([]blockchain.Block{})
@@ -24,14 +24,14 @@ func main() {
 	blockChan := make(chan blockchain.Block)
 
 	go api.StartServer(*apiPort, bc, blockChan)
-	go p2p.StartServer(*srvPort, bc, blockChan)
+	go p2p.StartServer(*p2pPort, bc, blockChan)
 
-	connectToPeers(*peersPath, bc, *srvPort)
+	connectToPeers(*peersPath, bc, *p2pPort)
 
 	select {}
 }
 
-func connectToPeers(peersPath string, bc *blockchain.Blockchain, srvPort int) {
+func connectToPeers(peersPath string, bc *blockchain.Blockchain, p2pPort int) {
 	file, err := os.Open(peersPath)
 	if err != nil {
 		bullshit.WarnIf(err)
@@ -53,6 +53,6 @@ func connectToPeers(peersPath string, bc *blockchain.Blockchain, srvPort int) {
 		port, err := strconv.Atoi(parts[1])
 		bullshit.WarnIf(err)
 
-		go p2p.StartClient(host, port, bc, srvPort)
+		go p2p.StartClient(host, port, bc, p2pPort)
 	}
 }

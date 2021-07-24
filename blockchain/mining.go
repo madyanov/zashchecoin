@@ -8,7 +8,7 @@ func MineBlock(
 	difficulty int,
 	previousHash []byte,
 ) Block {
-	nonce := 0
+	var nonce int64 = 0
 
 	for {
 		block := newBlock(

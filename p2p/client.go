@@ -8,12 +8,12 @@ import (
 	"zc/bullshit"
 )
 
-func StartClient(host string, port int, bc *blockchain.Blockchain, srvPort int) {
+func StartClient(host string, port int, bc *blockchain.Blockchain, p2pPort int) {
 	addr := &net.TCPAddr{IP: net.ParseIP(host), Port: port}
-	startClient(addr, bc, srvPort, true)
+	startClient(addr, bc, p2pPort, true)
 }
 
-func startClient(addr *net.TCPAddr, bc *blockchain.Blockchain, srvPort int, handshake bool) {
+func startClient(addr *net.TCPAddr, bc *blockchain.Blockchain, p2pPort int, handshake bool) {
 	log.Printf("Client: dial to %v\n", addr)
 
 	conn, err := net.DialTCP("tcp", nil, addr)
@@ -30,7 +30,7 @@ func startClient(addr *net.TCPAddr, bc *blockchain.Blockchain, srvPort int, hand
 	}
 
 	if handshake {
-		server.sendHandshake(srvPort)
+		server.sendHandshake(p2pPort)
 	}
 
 	for {

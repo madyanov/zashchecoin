@@ -15,7 +15,7 @@ type Block struct {
 	Timestamp    int64
 	Data         []byte
 	Difficulty   int
-	Nonce        int
+	Nonce        int64
 	PreviousHash []byte
 	Hash         []byte
 }
@@ -36,7 +36,7 @@ func newBlock(
 	timestamp int64,
 	data []byte,
 	difficulty int,
-	nonce int,
+	nonce int64,
 	previousHash []byte,
 ) Block {
 	block := Block{}
@@ -66,7 +66,7 @@ func (b Block) calculateHash() []byte {
 	bytes = append(bytes, []byte(strconv.FormatInt(b.Timestamp, 10))...)
 	bytes = append(bytes, b.Data...)
 	bytes = append(bytes, []byte(strconv.Itoa(b.Difficulty))...)
-	bytes = append(bytes, []byte(strconv.Itoa(b.Nonce))...)
+	bytes = append(bytes, []byte(strconv.FormatInt(b.Nonce, 10))...)
 	bytes = append(bytes, b.PreviousHash...)
 	hash := sha256.Sum256(bytes)
 	return hash[:]
