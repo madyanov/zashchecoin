@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"encoding/gob"
 	"io"
-	"log"
 	"os"
 	"sync"
 
 	"zc/blockchain"
 	"zc/bullshit"
+	"zc/encoding"
 )
 
 type DiskBlockchain struct {
@@ -21,12 +21,18 @@ type DiskBlockchain struct {
 }
 
 func NewDiskBlockchain(bcPath string) *DiskBlockchain {
-	f, err := os.OpenFile(bcPath, os.O_RDWR|os.O_CREATE, 0755)
+	f, err := os.OpenFile(bcPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	bullshit.FailIf(err)
 	// never close file
 
 	r := bufio.NewReader(f)
-	dec := gob.NewDecoder(r)
+	w := bufio.NewWriter(f)
+
+	enc, buf, err := encoding.NewEncoderWithoutHeader(w, &blockchain.Block{})
+	bullshit.FailIf(err)
+
+	dec, err := encoding.NewDecoderWithoutHeader(r, buf, &blockchain.Block{})
+	bullshit.FailIf(err)
 
 	blocks := []blockchain.Block{}
 
@@ -45,16 +51,11 @@ func NewDiskBlockchain(bcPath string) *DiskBlockchain {
 	memBc, err := blockchain.NewMemBlockchain(blocks)
 	bullshit.FailIf(err)
 
-	w := bufio.NewWriter(f)
 	bc := &DiskBlockchain{
 		mem: memBc,
 		f:   f,
 		w:   w,
-		enc: gob.NewEncoder(w),
-	}
-
-	if bc.mem == nil {
-		log.Fatalln("Invalid blockchain")
+		enc: enc,
 	}
 
 	// write the genesis block
