@@ -8,7 +8,7 @@
 - [x] Mining
 - [x] P2P
 - [x] HTTP API
-- [ ] Persistence
+- [x] Persistence
 - [ ] Transactions
 - [ ] Wallet
 
@@ -19,10 +19,12 @@ CLI parameters:
 ```
   -api-port int
     	HTTP API port (default 8080)
-  -peers string
-    	Path to the peers file (default "peers.txt")
+  -bc string
+    	Path to the blockchain file (default "bc.dat")
   -p2p-port int
     	P2P server port (default 8081)
+  -peers string
+    	Path to the peers file (default "peers.txt")
 ```
 
 HTTP API methods:

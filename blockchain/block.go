@@ -101,6 +101,7 @@ func (b Block) checkNextBlock(next Block) bool {
 		return false
 	}
 
+	// todo: move 60 in constants
 	if b.Timestamp-60 > next.Timestamp || next.Timestamp > time.Now().Unix() {
 		return false
 	}

@@ -42,9 +42,9 @@ func (c clientServer) readBlock() blockchain.Block {
 	return resp.block
 }
 
-func (c clientServer) readChain() *blockchain.Blockchain {
+func (c clientServer) readChain() *blockchain.MemBlockchain {
 	log.Println("Client: read chain")
 	resp := respChain{}
 	resp.decode(c.r)
-	return blockchain.NewBlockchain(resp.blocks)
+	return blockchain.NewMemBlockchain(resp.blocks)
 }

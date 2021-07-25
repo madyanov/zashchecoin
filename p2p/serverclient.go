@@ -45,7 +45,7 @@ func (c serverClient) sendBlock(block blockchain.Block) {
 	resp.encode(c.w)
 }
 
-func (c serverClient) sendBlockchain(bc *blockchain.Blockchain) {
+func (c serverClient) sendBlockchain(bc blockchain.Blockchain) {
 	log.Println("Server: send blockchain")
 	c.updateDeadline()
 	resp := respChain{blocks: bc.AllBlocks()}

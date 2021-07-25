@@ -16,8 +16,8 @@ type server struct {
 	clientsMtx sync.RWMutex
 }
 
-func StartServer(port int, bc *blockchain.Blockchain, blockChan <-chan blockchain.Block) {
-	log.Printf("Server: listen on %d", port)
+func StartServer(port int, bc blockchain.Blockchain, blockChan <-chan blockchain.Block) {
+	log.Println("Server: listen on", port)
 
 	ln, err := net.Listen("tcp", ":"+strconv.Itoa(port))
 	bullshit.FailIf(err)
@@ -26,16 +26,17 @@ func StartServer(port int, bc *blockchain.Blockchain, blockChan <-chan blockchai
 	server := &server{}
 	server.clients = make(map[int]serverClient)
 
+	go server.broadcastBlocks(blockChan)
+
 	for {
 		conn, err := ln.Accept()
 		bullshit.WarnIf(err)
 
 		go server.handleConn(conn, bc, port)
-		go server.broadcastBlocks(blockChan)
 	}
 }
 
-func (s *server) handleConn(conn net.Conn, bc *blockchain.Blockchain, port int) {
+func (s *server) handleConn(conn net.Conn, bc blockchain.Blockchain, port int) {
 	defer conn.Close()
 
 	client := s.addClient(conn)
@@ -69,6 +70,8 @@ func (s *server) broadcastBlocks(blockChan <-chan blockchain.Block) {
 }
 
 func (s *server) broadcastBlock(block blockchain.Block) {
+	log.Println("Server: broadcast block")
+
 	s.clientsMtx.RLock()
 	defer s.clientsMtx.RUnlock()
 

@@ -2,7 +2,7 @@ package blockchain
 
 import "time"
 
-func MineBlock(
+func mineBlock(
 	height int,
 	data []byte,
 	difficulty int,
