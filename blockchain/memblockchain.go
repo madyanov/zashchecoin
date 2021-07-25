@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"errors"
 	"sync"
 
 	"zc/bullshit"
@@ -16,7 +17,7 @@ type MemBlockchain struct {
 	mtx    sync.RWMutex
 }
 
-func NewMemBlockchain(blocks []Block) *MemBlockchain {
+func NewMemBlockchain(blocks []Block) (*MemBlockchain, error) {
 	bc := &MemBlockchain{}
 
 	if len(blocks) > 0 {
@@ -25,7 +26,11 @@ func NewMemBlockchain(blocks []Block) *MemBlockchain {
 		bc.blocks = append(bc.blocks, Genesis)
 	}
 
-	return bc
+	if !bc.checkChain() {
+		return nil, errors.New("invalid blockchain")
+	}
+
+	return bc, nil
 }
 
 func (bc *MemBlockchain) AllBlocks() []Block {
@@ -73,6 +78,16 @@ func (bc *MemBlockchain) MineBlock(data []byte) Block {
 	)
 }
 
+func (bc *MemBlockchain) Weight() int {
+	sum := 0
+
+	for _, block := range bc.blocks {
+		sum += 1 << block.Difficulty
+	}
+
+	return sum
+}
+
 func (bc *MemBlockchain) lastBlock() Block {
 	return bc.blocks[len(bc.blocks)-1]
 }
@@ -92,8 +107,7 @@ func (bc *MemBlockchain) checkChain() bool {
 }
 
 func (bc *MemBlockchain) checkNewBlock(new Block, prev Block) bool {
-	return prev.checkNextBlock(new) &&
-		new.Difficulty == bc.calculateDifficulty(prev)
+	return prev.checkNextBlock(new) && new.Difficulty == bc.calculateDifficulty(prev)
 }
 
 func (bc *MemBlockchain) calculateDifficulty(lastBlock Block) int {
@@ -116,17 +130,6 @@ func (bc *MemBlockchain) calculateDifficulty(lastBlock Block) int {
 	return bullshit.Max(1, difficulty)
 }
 
-func (bc *MemBlockchain) totalDifficulty() int {
-	sum := 0
-
-	for _, block := range bc.blocks {
-		sum += 1 << block.Difficulty
-	}
-
-	return sum
-}
-
 func (bc *MemBlockchain) shouldReplace(newBc *MemBlockchain) bool {
-	return newBc.totalDifficulty() > bc.totalDifficulty() &&
-		newBc.checkChain()
+	return newBc.Weight() > bc.Weight() && newBc.checkChain()
 }

@@ -16,9 +16,14 @@ type clientServer struct {
 	w    io.Writer
 }
 
-func (c clientServer) sendHandshake(port int) {
+func (c clientServer) sendHandshake(port int, weight int) {
 	log.Println("Client: send handshake")
-	req := reqHandshake{port: int16(port)}
+
+	req := reqHandshake{
+		port:   int16(port),
+		weight: int64(weight),
+	}
+
 	req.encode(c.w)
 }
 
@@ -44,7 +49,12 @@ func (c clientServer) readBlock() blockchain.Block {
 
 func (c clientServer) readChain() *blockchain.MemBlockchain {
 	log.Println("Client: read chain")
+
 	resp := respChain{}
 	resp.decode(c.r)
-	return blockchain.NewMemBlockchain(resp.blocks)
+
+	bc, err := blockchain.NewMemBlockchain(resp.blocks)
+	bullshit.WarnIf(err)
+
+	return bc
 }

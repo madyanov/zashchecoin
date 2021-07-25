@@ -42,14 +42,19 @@ func NewDiskBlockchain(bcPath string) *DiskBlockchain {
 		blocks = append(blocks, block)
 	}
 
-	log.Println("Loaded blocks:", len(blocks))
+	memBc, err := blockchain.NewMemBlockchain(blocks)
+	bullshit.FailIf(err)
 
 	w := bufio.NewWriter(f)
 	bc := &DiskBlockchain{
-		mem: blockchain.NewMemBlockchain(blocks),
+		mem: memBc,
 		f:   f,
 		w:   w,
 		enc: gob.NewEncoder(w),
+	}
+
+	if bc.mem == nil {
+		log.Fatalln("Invalid blockchain")
 	}
 
 	// write the genesis block
@@ -90,7 +95,7 @@ func (bc *DiskBlockchain) Replace(newBc *blockchain.MemBlockchain) bool {
 	err := bc.f.Truncate(0)
 	bullshit.FailIf(err)
 
-	_, err = bc.f.Seek(0, 0)
+	_, err = bc.f.Seek(0, io.SeekStart)
 	bullshit.FailIf(err)
 
 	blocks := newBc.AllBlocks()
@@ -105,6 +110,10 @@ func (bc *DiskBlockchain) Replace(newBc *blockchain.MemBlockchain) bool {
 
 func (bc *DiskBlockchain) MineBlock(data []byte) blockchain.Block {
 	return bc.mem.MineBlock(data)
+}
+
+func (bc *DiskBlockchain) Weight() int {
+	return bc.mem.Weight()
 }
 
 func (bc *DiskBlockchain) writeBlock(block blockchain.Block) {

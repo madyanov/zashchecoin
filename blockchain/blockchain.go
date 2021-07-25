@@ -5,4 +5,5 @@ type Blockchain interface {
 	AddBlock(block Block) bool
 	Replace(newBc *MemBlockchain) bool
 	MineBlock(data []byte) Block
+	Weight() int
 }

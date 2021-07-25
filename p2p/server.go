@@ -55,7 +55,16 @@ func (s *server) handleConn(conn net.Conn, bc blockchain.Blockchain, port int) {
 
 			if addr, ok := conn.RemoteAddr().(*net.TCPAddr); ok {
 				addr.Port = int(handshake.port)
-				go startClient(addr, bc, port, false)
+
+				weight := bc.Weight()
+				reqBc := handshake.weight > int64(weight)
+				sendBc := handshake.weight < int64(weight)
+
+				if sendBc {
+					client.sendBlockchain(bc)
+				}
+
+				go startClient(addr, bc, port, false, reqBc)
 			}
 		case reqTypeChain:
 			client.sendBlockchain(bc)

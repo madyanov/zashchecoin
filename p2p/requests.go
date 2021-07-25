@@ -15,7 +15,8 @@ const (
 
 // Handshake
 type reqHandshake struct {
-	port int16
+	port   int16
+	weight int64
 }
 
 func (req *reqHandshake) encode(w io.Writer) {
@@ -23,12 +24,20 @@ func (req *reqHandshake) encode(w io.Writer) {
 	bullshit.WarnIf(err)
 
 	enc := gob.NewEncoder(w)
+
 	err = enc.Encode(req.port)
+	bullshit.WarnIf(err)
+
+	err = enc.Encode(req.weight)
 	bullshit.WarnIf(err)
 }
 
 func (req *reqHandshake) decode(r io.Reader) {
 	dec := gob.NewDecoder(r)
+
 	err := dec.Decode(&req.port)
+	bullshit.WarnIf(err)
+
+	err = dec.Decode(&req.weight)
 	bullshit.WarnIf(err)
 }

@@ -10,10 +10,16 @@ import (
 
 func StartClient(host string, port int, bc blockchain.Blockchain, p2pPort int) {
 	addr := &net.TCPAddr{IP: net.ParseIP(host), Port: port}
-	startClient(addr, bc, p2pPort, true)
+	startClient(addr, bc, p2pPort, true, false)
 }
 
-func startClient(addr *net.TCPAddr, bc blockchain.Blockchain, p2pPort int, handshake bool) {
+func startClient(
+	addr *net.TCPAddr,
+	bc blockchain.Blockchain,
+	p2pPort int,
+	sendHandshake bool,
+	reqBc bool,
+) {
 	log.Println("Client: dial to", addr)
 
 	conn, err := net.DialTCP("tcp", nil, addr)
@@ -29,8 +35,13 @@ func startClient(addr *net.TCPAddr, bc blockchain.Blockchain, p2pPort int, hands
 		w:    conn,
 	}
 
-	if handshake {
-		server.sendHandshake(p2pPort)
+	if sendHandshake {
+		weight := bc.Weight()
+		server.sendHandshake(p2pPort, weight)
+	}
+
+	if reqBc {
+		server.reqChain()
 	}
 
 	for {
@@ -52,7 +63,7 @@ func startClient(addr *net.TCPAddr, bc blockchain.Blockchain, p2pPort int, hands
 		case respTypeChain:
 			chain := server.readChain()
 
-			if bc.Replace(chain) {
+			if chain != nil && bc.Replace(chain) {
 				log.Println("Client: chain replaced")
 			}
 		}
